@@ -12,6 +12,7 @@
 #include <linux/pagewalk.h>
 #include <linux/atomic.h>
 #include <linux/highmem.h>
+#include <linux/rmap.h>
 
 /*
  * Task 3 requires this structure to be defined in the implementation
@@ -44,7 +45,7 @@ static bool cow_vma_is_interesting(struct vm_area_struct *vma)
 	if (!(vma->vm_flags & VM_WRITE))
 		return false;
 
-	if (is_vm_hugetlb_page(vma))
+	if (vma->vm_flags & VM_HUGETLB)
 		return false;
 
 	if (vma->vm_flags & VM_PFNMAP)
@@ -81,14 +82,14 @@ static bool pte_is_cow_candidate(struct vm_area_struct *vma, pte_t pte)
 	if (!pfn_valid(pfn))
 		return false;
 
-	page = pfn_page(pfn);
+	page = pfn_to_page(pfn);
 
 	/*
 	 * Assignment wording says the physical page must be mapped by
 	 * more than one process. page_mapcount() matches that intent
 	 * better than page_count().
 	 */
-	if (page_mapcount(page) <= 1)
+	if (folio_mapcount(page_folio(page)) <= 1)
 		return false;
 
 	return true;
@@ -182,7 +183,6 @@ SYSCALL_DEFINE2(cow_info, pid_t, pid, struct cow_info __user *, info)
 	struct vm_area_struct *vma;
 	struct cow_info kinfo = {0};
 	struct cow_walk_ctx ctx;
-	VMA_ITERATOR(vmi, NULL, 0);
 	int ret = 0;
 
 	if (pid < 0)
@@ -204,8 +204,7 @@ SYSCALL_DEFINE2(cow_info, pid_t, pid, struct cow_info __user *, info)
 	kinfo.cow_fault_count = atomic_long_read(&task->cow_fault_count);
 
 	mmap_read_lock(mm);
-
-	vma_iter_init(&vmi, mm, 0);
+	VMA_ITERATOR(vmi, mm, 0);
 	for_each_vma(vmi, vma) {
 		if (!cow_vma_is_interesting(vma))
 			continue;

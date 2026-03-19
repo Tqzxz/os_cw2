@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "linux-6.12.67",
+			"path": "../../os/linux-6.12.67"
+		},
+		{
+			"name": "os_cw2",
+			"path": ".."
+		},
+		{
+			"name": "linux-6.12.66",
+			"path": "../../os/linux-6.12.66"
+		}
+	],
+	"settings": {}
+}
