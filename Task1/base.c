@@ -823,19 +823,19 @@ static int proc_pid_mem_ops(
 )
 {
 	seq_printf(m,"mmap %ld %ld\n",
-				atomic_long_read(&task->mmap_count)
+				atomic_long_read(&task->mmap_count),
 				atomic_long_read(&task->mmap_bytes));
 
 	seq_printf(m,"munmap %ld %ld\n",
-				atomic_long_read(&task->munmap_count)
+				atomic_long_read(&task->munmap_count),
 				atomic_long_read(&task->munmap_bytes));
 	
 	seq_printf(m,"mprotect %ld %ld\n",
-				atomic_long_read(&task->mprotect_count)
+				atomic_long_read(&task->mprotect_count),
 				atomic_long_read(&task->mprotect_bytes));
 	
 	seq_printf(m,"brk %ld %ld\n",
-				atomic_long_read(&task->brk_count)
+				atomic_long_read(&task->brk_count),
 				atomic_long_read(&task->brk_bytes));
 
 	return 0;
